@@ -1,0 +1,13 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ConnectionStrings": {
+    "WDIPaladinsConnectionString": "DataSource=./DataBase/paladinsDB.db",
+    "WDIPaladinsConnectionStringEF": "DataSource=./DataBase/paladinsDBEF3.db"
+  },
+  "AllowedHosts": "*"
+}
