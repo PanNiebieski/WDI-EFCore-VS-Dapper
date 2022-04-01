@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WDIPaladins.Application", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WDIPaladins.Infrastructure.Dapper", "DapperExample\WDIPaladins.Infrastructure.Dapper\WDIPaladins.Infrastructure.Dapper.csproj", "{E1E7CC70-7BB8-45D2-88AD-42887772E853}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WDIPaladins.ApiWithDapper", "DapperExample\WDIPaladins.Api\WDIPaladins.ApiWithDapper.csproj", "{5EF0A833-250B-4FB7-BE49-59D2169FDBF5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WDIPaladins.ApiWithEfCore", "DapperExample\WDIPaladins.Api\WDIPaladins.ApiWithEfCore.csproj", "{5EF0A833-250B-4FB7-BE49-59D2169FDBF5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WDIPaladins.Domain", "EFCoreExample\Paladin.Domain\WDIPaladins.Domain.csproj", "{57F56BBB-0A01-4C34-87DA-8A32CA7D7BF9}"
 EndProject

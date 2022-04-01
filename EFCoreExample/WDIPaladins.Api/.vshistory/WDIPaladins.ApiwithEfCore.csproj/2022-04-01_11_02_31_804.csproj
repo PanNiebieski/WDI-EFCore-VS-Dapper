@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="DataBase\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Paladin.Application\WDIPaladins.Application.csproj" />
+    <ProjectReference Include="..\WDIPaladins.Infrastructure.Dapper\WDIPaladins.Infrastructure.Dapper.csproj" />
+    <ProjectReference Include="..\WDIPaladins.Infrastructure.EFCore\WDIPaladins.Infrastructure.EFCore.csproj" />
+  </ItemGroup>
+
+</Project>

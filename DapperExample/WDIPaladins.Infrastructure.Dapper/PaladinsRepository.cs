@@ -114,125 +114,7 @@ namespace WDIPaladins.Infrastructure.Dapper
 
         public async Task<IReadOnlyList<Paladin>> GetAllAsync()
         {
-            using var connection = new SqliteConnection
-                           (_dbContext.ConnectionString);
-
-            //var q = @$"SELECT
-            //    p.Id,p.UniqueId,p.Name,p.Title,p.MonasteryId
-            //    FROM Paladin as p";
-
-            //var r = await connection.QueryAsync<Paladin>(q);
-
-            var q2 = @$"SELECT
-                p.Id, p.UniqueId, p.Name, p.Title,p.MonasteryId,
-                m.Name as MonasteryName,
-                i.Name as ItemName,
-                i.Attack as ItemAttack,
-                i.Defense as ItemDefense,
-                i.Speed as  ItemSpeed,
-                i.Mana as ItemMana,
-                i.Id as ItemId,
-                s.Name as SkillName,
-                s.Id as SkillId
-                FROM Paladins as p
-                INNER JOIN PaladinsItems as pi ON p.Id = pi.PaladinId
-                INNER JOIN PaladinsSkills as ps ON p.Id = ps.PaladinId
-                INNER JOIN Skills as s ON s.Id = ps.SkillId
-                INNER JOIN Items as i ON i.Id = pi.ItemId
-                INNER JOIN Monasteries as m ON m.Id = p.MonasteryId";
-
-            var r = await connection.QueryAsync<PaladinTemp>(q2);
-
-            var paladinstemp = r.ToList();
-
-            List<Paladin> list = new List<Paladin>();
-
-            foreach (var temp in paladinstemp)
-            {
-                var find =
-                    list.FirstOrDefault(k => k.Id == temp.Id);
-
-                if (find is null)
-                {
-                    Paladin p = new Paladin();
-
-                    p.Name = temp.Name;
-                    p.Title = temp.Title;
-                    p.Id = temp.Id;
-                    p.UniqueId = temp.UniqueId;
-                    p.Monastery = new Monastery()
-                    {
-                        Id = temp.MonasteryId,
-                        Name = temp.MonasteryName
-                    };
-
-                    Skill s = new Skill()
-                    {
-                        Id = temp.SkillId,
-                        Name = temp.SkillName,
-                    };
-
-                    p.Skills.Add(s);
-
-                    Item item = new Item()
-                    {
-                        Name = temp.Name,
-                        Id = temp.ItemId,
-                        Attack = temp.ItemAttack,
-                        Defense = temp.ItemDefense,
-                        Mana = temp.ItemMana,
-                        Speed = temp.ItemSpeed
-                    };
-
-                    p.Items.Add(item);
-
-
-                    list.Add(p);
-                }
-                else
-                {
-                    var skillfind =
-                        find.Skills.FirstOrDefault(k => k.Id == temp.SkillId);
-
-                    if (skillfind is null)
-                    {
-                        Skill s = new Skill()
-                        {
-                            Id = temp.SkillId,
-                            Name = temp.SkillName,
-                        };
-
-                        find.Skills.Add(s);
-                    }
-
-
-
-                    var itemfind =
-                        find.Items.FirstOrDefault(k => k.Id == temp.ItemId);
-
-                    if (itemfind is null)
-                    {
-                        Item item = new Item()
-                        {
-                            Name = temp.Name,
-                            Id = temp.ItemId,
-                            Attack = temp.ItemAttack,
-                            Defense = temp.ItemDefense,
-                            Mana = temp.ItemMana,
-                            Speed = temp.ItemSpeed
-                        };
-
-                        find.Items.Add(item);
-                    }
-
-
-   
-
-                }
-
-            }
-
-            return list.AsReadOnly();
+            return await GetAllAsync1();
         }
 
         public async Task<Paladin> GetByIdAsync(long id)
@@ -399,9 +281,11 @@ namespace WDIPaladins.Infrastructure.Dapper
 
         public async Task UpdateAsync(Paladin entity)
         {
-            var old = await GetByIdAsync(entity.Id);
+            await UpdateAsync2(entity);
+        }
 
-
+        public async Task UpdateAsync1(Paladin entity)
+        {
             using var connection = new SqliteConnection
                  (_dbContext.ConnectionString);
 
@@ -491,5 +375,230 @@ namespace WDIPaladins.Infrastructure.Dapper
                 }
             }
         }
+
+        public async Task UpdateAsync2(Paladin entity)
+        {
+            var old = await GetByIdAsync(entity.Id);
+
+            using var connection = new SqliteConnection
+                 (_dbContext.ConnectionString);
+
+            var q = @"UPDATE Paladins
+                SET Name = @Name, Title = @Title,
+                WHERE UniqueId = @UniqueId;";
+
+            var r1 = await connection
+                .ExecuteAsync(q,
+                new
+                {
+                    @Name = entity.Name,
+                    @Title = entity.Title,
+                    @UniqueId = entity.UniqueId
+                });
+
+
+            foreach (var skill in entity.Skills)
+            {
+                var check = 
+                    old.Skills.FirstOrDefault(k => k.Id == skill.Id);
+
+                if (check is null)
+                {
+                    var q2 = @"INSERT INTO PaladinsSkills 
+                    (SkillId, PaladinId)
+                    VALUES(@SkillId, @PaladinId);
+
+                    SELECT seq From sqlite_sequence Where Name='PaladinsSkills'";
+
+                    var r2 = await connection.QueryAsync<int>(q2,
+                        new
+                        {
+                            @SkillId = skill.Id,
+                            @PaladinId = entity.Id,
+                        });
+                }
+            }
+
+            foreach (var item in entity.Items)
+            {
+                var check =
+                    old.Items.FirstOrDefault(k => k.Id == item.Id);
+
+                if (check is null)
+                {
+                    var q2 = @"INSERT INTO PaladinsItems 
+                    (ItemId, PaladinId)
+                    VALUES(@ItemId, @PaladinId);
+
+                    SELECT seq From sqlite_sequence Where Name='PaladinsItems'";
+
+                    var r2 = await connection.QueryAsync<int>(q2,
+                        new
+                        {
+                            @ItemId = item.Id,
+                            @PaladinId = entity.Id,
+                        });
+                }
+            }
+
+        }
+
+
+
+
+        public async Task<IReadOnlyList<Paladin>> GetAllAsync1()
+        {
+            using var connection = new SqliteConnection
+                           (_dbContext.ConnectionString);
+
+            var q2 = @$"SELECT
+                p.*,s.*,i.*,m.*
+                FROM Paladins as p
+                INNER JOIN PaladinsItems as pi ON p.Id = pi.PaladinId
+                INNER JOIN PaladinsSkills as ps ON p.Id = ps.PaladinId
+                INNER JOIN Skills as s ON s.Id = ps.SkillId
+                INNER JOIN Items as i ON i.Id = pi.ItemId
+                INNER JOIN Monasteries as m ON m.Id = p.MonasteryId";
+
+            var r = await connection.QueryAsync<Paladin,Skill,Item,Monastery, Paladin>
+                (q2,(paladin,skill,item,monastery) =>
+                {
+
+                    paladin.Skills.Add(skill);
+                    paladin.Items.Add(item);
+                    paladin.Monastery = monastery;
+
+                    return paladin;
+                });
+
+
+            return r.ToList().AsReadOnly();
+        }
+
+
+        public async Task<IReadOnlyList<Paladin>> GetAllAsync2()
+        {
+            using var connection = new SqliteConnection
+                           (_dbContext.ConnectionString);
+
+            //var q = @$"SELECT
+            //    p.Id,p.UniqueId,p.Name,p.Title,p.MonasteryId
+            //    FROM Paladin as p";
+
+            //var r = await connection.QueryAsync<Paladin>(q);
+
+            var q2 = @$"SELECT
+                p.Id, p.UniqueId, p.Name, p.Title,p.MonasteryId,
+                m.Name as MonasteryName,
+                i.Name as ItemName,
+                i.Attack as ItemAttack,
+                i.Defense as ItemDefense,
+                i.Speed as  ItemSpeed,
+                i.Mana as ItemMana,
+                i.Id as ItemId,
+                s.Name as SkillName,
+                s.Id as SkillId
+                FROM Paladins as p
+                INNER JOIN PaladinsItems as pi ON p.Id = pi.PaladinId
+                INNER JOIN PaladinsSkills as ps ON p.Id = ps.PaladinId
+                INNER JOIN Skills as s ON s.Id = ps.SkillId
+                INNER JOIN Items as i ON i.Id = pi.ItemId
+                INNER JOIN Monasteries as m ON m.Id = p.MonasteryId";
+
+            var r = await connection.QueryAsync<PaladinTemp>(q2);
+
+            var paladinstemp = r.ToList();
+
+            List<Paladin> list = new List<Paladin>();
+
+            foreach (var temp in paladinstemp)
+            {
+                var find =
+                    list.FirstOrDefault(k => k.Id == temp.Id);
+
+                if (find is null)
+                {
+                    Paladin p = new Paladin();
+
+                    p.Name = temp.Name;
+                    p.Title = temp.Title;
+                    p.Id = temp.Id;
+                    p.UniqueId = temp.UniqueId;
+                    p.Monastery = new Monastery()
+                    {
+                        Id = temp.MonasteryId,
+                        Name = temp.MonasteryName
+                    };
+
+                    Skill s = new Skill()
+                    {
+                        Id = temp.SkillId,
+                        Name = temp.SkillName,
+                    };
+
+                    p.Skills.Add(s);
+
+                    Item item = new Item()
+                    {
+                        Name = temp.Name,
+                        Id = temp.ItemId,
+                        Attack = temp.ItemAttack,
+                        Defense = temp.ItemDefense,
+                        Mana = temp.ItemMana,
+                        Speed = temp.ItemSpeed
+                    };
+
+                    p.Items.Add(item);
+
+
+                    list.Add(p);
+                }
+                else
+                {
+                    var skillfind =
+                        find.Skills.FirstOrDefault(k => k.Id == temp.SkillId);
+
+                    if (skillfind is null)
+                    {
+                        Skill s = new Skill()
+                        {
+                            Id = temp.SkillId,
+                            Name = temp.SkillName,
+                        };
+
+                        find.Skills.Add(s);
+                    }
+
+
+
+                    var itemfind =
+                        find.Items.FirstOrDefault(k => k.Id == temp.ItemId);
+
+                    if (itemfind is null)
+                    {
+                        Item item = new Item()
+                        {
+                            Name = temp.Name,
+                            Id = temp.ItemId,
+                            Attack = temp.ItemAttack,
+                            Defense = temp.ItemDefense,
+                            Mana = temp.ItemMana,
+                            Speed = temp.ItemSpeed
+                        };
+
+                        find.Items.Add(item);
+                    }
+
+
+
+
+                }
+
+            }
+
+            return list.AsReadOnly();
+        }
     }
+
+
 }

@@ -53,12 +53,18 @@ namespace WDIPaladins.Infrastructure.EFCore
                 .Include(p => p.Monastery)
                 .ToListAsync();
 
+
+
             return better;
         }
 
         public async Task<Paladin> GetByIdAsync(long id)
         {
             //return await _dbContext.Paladins.FindAsync(id);
+
+            //var hell = await _dbContext.Paladins.FindAsync(id);
+            //_dbContext.Entry(hell).Reference(s => s.Skills).Load();
+            //_dbContext.Entry(hell).Collection(s => s.Items).Load();
 
             return await _dbContext.Paladins.
                 Include(p => p.Items)

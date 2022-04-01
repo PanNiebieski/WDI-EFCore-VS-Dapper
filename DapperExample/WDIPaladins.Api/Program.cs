@@ -10,15 +10,15 @@ builder.Services.AddEndpointsApiExplorer();
 
 ConfigurationManager configuration = builder.Configuration;
 
-//builder.Services.AddDapperServices(configuration);
-builder.Services.AddEFServices(configuration);
+builder.Services.AddDapperServices(configuration);
+//builder.Services.AddEFServices(configuration);
 
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "WDIPaladins.Api",
+        Title = "WDIPaladins.Api Dapper",
     });
 
 });
@@ -33,7 +33,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint
-    ("/swagger/v1/swagger.json", "WDIPaladins.Api");
+    ("/swagger/v1/swagger.json", "WDIPaladins.Api Dapper");
 });
 
 

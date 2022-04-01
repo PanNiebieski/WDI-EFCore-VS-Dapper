@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
-        Title = "WDIPaladins.Api",
+        Title = "WDIPaladins.Api.EFCore",
     });
 
 });
@@ -32,7 +32,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint
-    ("/swagger/v1/swagger.json", "WDIPaladins.Api");
+    ("/swagger/v1/swagger.json", "WDIPaladins.Api.EFCore");
 });
 
 
